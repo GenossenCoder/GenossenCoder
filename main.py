@@ -152,6 +152,15 @@ async def on_message(message):
     if not message.content.startswith(INDIC):
         return
 
+    if cmd.startswith("running"):
+        for i in running():
+            poll = getPoll(i)
+
+            send_msg = poll["title"] + "\n" + poll["text"] + "\nDeadline: " + datetime.strftime(poll["deadline"], '%d/%m/%Y %H:%M' + "\n" + "Poll id: "+ str(poll["_id"]))
+
+            await message.channel.send(send_msg)
+
+
     # if cmd.startswith("running"):
     #     for i in running():
     #         await send_poll(i, message.channel)
@@ -170,12 +179,5 @@ async def on_message(message):
     else:
         await handle_server_msg(message)
 
-    if cmd.startswith("running"):
-        for i in running():
-            poll = getPoll(i)
-
-            send_msg = poll["title"] + "\n" + poll["text"] + "\nDeadline: " + datetime.strftime(poll["deadline"], '%d/%m/%Y %H:%M' + "\n" + "Poll id: "+ str(poll["_id"]))
-
-            await message.channel.send(send_msg)
 
 client.run(TOKEN)
