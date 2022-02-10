@@ -52,4 +52,3 @@ def running():
     for i in Polls:
         if i['deadline'] > datetime.utcnow():
             runningPolls.append(i['_id'])
-    return runningPolls
