@@ -11,8 +11,13 @@ client = Client()
 
 
 async def send_as_piechart(id):            
-    dic: dict = get_status(id)
-    make_piechart(list(dic.keys()), list(dic.values()))
+    poll = getPoll(id)
+    
+    votes = []
+    for i in poll["competitors"]:
+        votes.append(len(poll[i]))
+
+    make_piechart(poll["competitors"], votes)
 
     with open("pie.png", "rb") as f:
         f = discord.File(f)
@@ -30,19 +35,32 @@ async def send_chart():
 async def handle_private_msg(message):
     cmd: str = message.content.replace(INDIC, "")
 
-    if cmd.startswith("show"):
-        x = 0
-        for i in running():
-            x += 1
-            send_as_piechart(i)
-            await message.channel.send(getPoll(i))
+    # if cmd.startswith("show"):
+    #     x = 0
+    #     for i in running():
+    #         x += 1
+    #         send_as_piechart(i)
+    #         await message.channel.send(getPoll(i))
 
             # hier nachricht vom user awaiten und dann add_vote aufrufen
 
 async def handle_server_msg(message):
-    #muss raus
-    await handle_admin_cmd(message)
+    cmd: str = message.content.replace(INDIC, "")
 
+    if cmd.startswith("running"):
+        for i in running():
+            #fixen
+            #send_as_piechart(i)
+            poll = getPoll(i)
+
+            send_msg = poll["title"] + "\n" + poll["text"] + "\nDeadline: " + datetime.strftime(poll["deadline"], '%d/%m/%Y %H:%M')
+
+            await message.channel.send(send_msg)
+            await send_as_piechart(i)
+
+
+    #muss raus
+    #await handle_admin_cmd(message)
 
     for r in message.author.roles:
         if r.id == 773996048094986241 or r.id == 773993684651212812:
@@ -56,19 +74,15 @@ async def handle_admin_cmd(message):
 
     elif cmd.startswith("new"):
         splitted = cmd.split("\"")
-        name = splitted[1]
-        text = splitted[2]
-        hours = splitted[3].strip()
+        title = splitted[1]
+        text = splitted[3]
+        hours = splitted[4].strip()
         options = cmd[cmd.find("[")+1 : cmd.find("]")]
         teilnehmer = options.split(",")
-        print(list(map(lambda x: x.strip(), teilnehmer)))
-        # neue wahl
-        createPoll(text, title, "multi", list(map(lambda x: x.trim(), teilnehmer)), hours)
+        #print(list(map(lambda x: x.strip(), teilnehmer)))
 
-    #running muss in nicht admin funktion
-    elif cmd.startswith("running"):
-        # print laufenden wahlen
-        pass
+        # neue wahl
+        createPoll(text, title, "multi", list(map(lambda x: x.strip(), teilnehmer)), int(hours))
 
     elif cmd.startswith("delete"):
         poll_id = cmd.split(" ")[1]

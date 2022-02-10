@@ -18,7 +18,7 @@ def createPoll(text,title,pollType,competetors,deadline):
         "text": text,
         "competetors":competetors,
         "createdAt": datetime.utcnow(),
-        "deadline":datetime.now() + timedelta(hours=deadline-1),
+        "deadline": datetime.now() + timedelta(hours=deadline-1),
         } 
         #appending competetors to the dictonary
         for i in range(len(competetors)):
@@ -40,7 +40,7 @@ def getPoll(id):
 def deletePoll(id):
     Events=Connect()
     Events.delete_one({"_id" :ObjectId(id)})
-    print(str(id)+" deleted")
+    return "Success"
     
 
 def running():
@@ -52,6 +52,5 @@ def running():
             runningPolls.append(i['_id'])
     return runningPolls
 #running()
-print(getPoll("6204fa9bb6436cbdfc1c9e8d"))
 #addVote("6204fa9bb6436cbdfc1c9e8d","Jasmin","du")
 #createPoll("text","title","multi",["Zombie", "Jasmin","Olaf","Clemens"],9)S
