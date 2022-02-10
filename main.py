@@ -1,15 +1,33 @@
-from http import client
 from TOKEN import TOKEN
 from discord import *
+from pie_chart import make_piechart
 import asyncio
+from discord.ext import commands, tasks
+from datetime import datetime, timedelta
 
 INDIC = ">"
 
 
 client = Client()
 
+@tasks.loop(hours=12)
+async def send_chart():
+    if running() == None:
+       return
+    else:
+        for i in running():
+            dic: dict = get_status(i)
+            make_piechart(list(dic.keys()), list(dic.values()))
+
+            with open("pie.png", "rb") as f:
+                f = discord.File(f)
+                await client.get_channel(940052984904155206).send(file=f)
+        
+async def handle_private_msg(message):
+    pass
 
 async def handle_server_msg(message):
+    #muss raus
     await handle_admin_cmd(message)
 
 
@@ -37,6 +55,8 @@ async def handle_admin_cmd(message):
     elif cmd.startswith("delete"):
         poll_id = cmd.split(" ")[1]
 
+        # delete call machen
+
 @client.event
 async def on_message(message):
     author: Member = message.author
@@ -49,7 +69,7 @@ async def on_message(message):
 
     # private channel
     if str(message.channel.type) == "private":
-        await message.channel.send("hure")
+        await handle_private_msg(message)
     # server
     else:
         await handle_server_msg(message)
