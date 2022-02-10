@@ -5,14 +5,15 @@ import asyncio
 from discord.ext import commands, tasks
 from datetime import datetime, timedelta
 from Database import *
+import os
 
 INDIC = ">"
 client = Client()
 
 
-async def send_as_piechart(id):            
+async def send_as_piechart(id, channel_id):            
     poll = getPoll(id)
-    
+
     votes = []
     for i in poll["competitors"]:
         votes.append(len(poll[i]))
@@ -20,9 +21,9 @@ async def send_as_piechart(id):
     make_piechart(poll["competitors"], votes)
 
     with open("pie.png", "rb") as f:
-        f = discord.File(f)
-        await client.get_channel(940052984904155206).send(file=f)
-    
+        f = File(f)
+        await client.get_channel(channel_id).send(file=f)
+        f.close()    
 
 @tasks.loop(hours=12)
 async def send_chart():
@@ -49,18 +50,16 @@ async def handle_server_msg(message):
 
     if cmd.startswith("running"):
         for i in running():
-            #fixen
-            #send_as_piechart(i)
             poll = getPoll(i)
 
             send_msg = poll["title"] + "\n" + poll["text"] + "\nDeadline: " + datetime.strftime(poll["deadline"], '%d/%m/%Y %H:%M')
 
             await message.channel.send(send_msg)
-            await send_as_piechart(i)
-
+            await send_as_piechart(i, message.channel.id)
+            
 
     #muss raus
-    #await handle_admin_cmd(message)
+    await handle_admin_cmd(message)
 
     for r in message.author.roles:
         if r.id == 773996048094986241 or r.id == 773993684651212812:
@@ -79,7 +78,6 @@ async def handle_admin_cmd(message):
         hours = splitted[4].strip()
         options = cmd[cmd.find("[")+1 : cmd.find("]")]
         teilnehmer = options.split(",")
-        #print(list(map(lambda x: x.strip(), teilnehmer)))
 
         # neue wahl
         createPoll(text, title, "multi", list(map(lambda x: x.strip(), teilnehmer)), int(hours))
