@@ -27,6 +27,3 @@ def createPoll(text,title,pollType,competetors,deadline):
         
     print(Events)
     Events.insert_one(Event_single)
-    
-
-createPoll("szu","sadghj,","single",["alfres","shdjak","dasjk"],12)
