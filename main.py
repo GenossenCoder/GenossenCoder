@@ -159,6 +159,7 @@ async def on_message(message):
     elif cmd.startswith("help"):
         await message.channel.send("""
         Commands:
+            `>running` Shows all running polls
             `>vote (PollID) (Vote)` Vote for your candidate (!Must be in private channel!)
         """)
 
@@ -168,5 +169,13 @@ async def on_message(message):
     # server
     else:
         await handle_server_msg(message)
+
+    if cmd.startswith("running"):
+        for i in running():
+            poll = getPoll(i)
+
+            send_msg = poll["title"] + "\n" + poll["text"] + "\nDeadline: " + datetime.strftime(poll["deadline"], '%d/%m/%Y %H:%M' + "\n" + "Poll id: "+ str(poll["_id"]))
+
+            await message.channel.send(send_msg)
 
 client.run(TOKEN)
