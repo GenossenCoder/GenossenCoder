@@ -84,7 +84,14 @@ async def handle_admin_cmd(message):
     cmd: str = message.content.replace(INDIC, "")
 
     if cmd == "help":
-        await message.channel.send("Command to create new poll: \n '>new [Option 1, Option 2, usw.] \"Title\" \"Text describing the vote.\" x' where x is the length in hours the poll should run")
+        await message.channel.send("""
+        Commands:
+            `>running` Shows all running polls
+            `>vote (PollID) (Vote)` Vote for your candidate (!Must be in private channel!)
+            `>new [Option 1, Option 2, usw...] "(Title)" "(Text)" (How many hours the poll should run)`
+            Bsp: >new [Yes, No] "Whos Coaeyl" "Pls vote wery importand" 72
+            `>delete (PollID)`
+        """)
 
     elif cmd.startswith("new"):
         # hier noch checken ob len richtig ist und sanitizen
@@ -127,7 +134,7 @@ async def handle_server_msg(message):
     cmd: str = message.content.replace(INDIC, "")
 
     #muss raus
-    await handle_admin_cmd(message)
+    #await handle_admin_cmd(message)
 
     for r in message.author.roles:
         if r.id == 773996048094986241 or r.id == 773993684651212812:
@@ -147,6 +154,13 @@ async def on_message(message):
     if cmd.startswith("running"):
         for i in running():
             await send_poll(i, message.channel)
+
+    elif cmd.startswith("help"):
+        await message.channel.send("""
+        Commands:
+            `>running` Shows all running polls
+            `>vote (PollID) (Vote)` Vote for your candidate (!Must be in private channel!)
+        """)
 
     # private channel
     if str(message.channel.type) == "private":
