@@ -10,19 +10,19 @@ def Connect():
     Events = db.Event
     return Events
 
-def createPoll(text,title,pollType,competetors,deadline):  
+def createPoll(text,title,pollType,competitors,deadline):  
     Events=Connect();
     if pollType=="multi":
         Event_single = {
         "title": title,
         "text": text,
-        "competetors":competetors,
+        "competitors":competitors,
         "createdAt": datetime.utcnow(),
         "deadline": datetime.now() + timedelta(hours=deadline-1),
         } 
         #appending competetors to the dictonary
-        for i in range(len(competetors)):
-            Event_single[competetors[i]]=[]
+        for i in range(len(competitors)):
+            Event_single[competitors[i]]=[]
     Events.insert_one(Event_single)
 
 def addVote(id,vote,name):
