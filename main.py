@@ -6,6 +6,7 @@ from discord.ext import commands, tasks
 from datetime import datetime, timedelta
 from Database import *
 import os
+from bson import errors
 
 INDIC = ">"
 client = Client()
@@ -25,45 +26,59 @@ async def send_as_piechart(id, channel_id):
         await client.get_channel(channel_id).send(file=f)
         f.close()    
 
-@tasks.loop(hours=12)
-async def send_chart():
-    if running() == None:
-       return
-    else:
-        for i in running():
-            send_as_piechart(i)
+
+async def send_poll(id, channel):  
+        poll = getPoll(id)
+
+        send_msg = poll["title"] + "\n" + poll["text"] + "\nDeadline: " + datetime.strftime(poll["deadline"], '%d/%m/%Y %H:%M' + "\n" + "Poll id: "+ str(poll["_id"]))
+
+        await channel.send(send_msg)
+        await send_as_piechart(id, channel.id)
+
+#vllt später
+# @tasks.loop(hours=12)
+# async def send_chart():
+#     if running() == None:
+#        return
+#     else:
+#         for i in running():
+#             send_as_piechart(i)
         
 async def handle_private_msg(message):
     cmd: str = message.content.replace(INDIC, "")
 
-    # if cmd.startswith("show"):
-    #     x = 0
-    #     for i in running():
-    #         x += 1
-    #         send_as_piechart(i)
-    #         await message.channel.send(getPoll(i))
+    if cmd.startswith("vote"):
+        splitted = cmd.split(" ")
+        if len(splitted) == 3:
+            id = splitted[1]
+            vote = splitted[2]
+            try:
+                poll = getPoll(id)
 
-            # hier nachricht vom user awaiten und dann add_vote aufrufen
+                for i in poll["competitors"]:
+                    if message.author.name in poll[i]:
+                        await message.channel.send("You already voted!")
+                        return
+                
+                if vote not in poll["competitors"]:
+                    await message.channel.send("Invalid vote choice.")
+                    return
 
-async def handle_server_msg(message):
-    cmd: str = message.content.replace(INDIC, "")
+                ret = addVote(id, vote, message.author.name)
+                if ret == "Success":
+                    await message.channel.send("Success!")
+                else:
+                    await message.channel.send("Datenbank hat nicht geantwortet. Schreib mal Hanns Eisler, der fixt das.")
 
-    if cmd.startswith("running"):
-        for i in running():
-            poll = getPoll(i)
+            except errors.InvalidId:
+                await message.channel.send("Invalid poll id.")
+            except KeyError:
+                await message.channel.send("Invalid vote choice.")
+            except:
+                await message.channel.send("Unknown error. Schreib mal Hanns Eisler, der fixt das.")
 
-            send_msg = poll["title"] + "\n" + poll["text"] + "\nDeadline: " + datetime.strftime(poll["deadline"], '%d/%m/%Y %H:%M')
-
-            await message.channel.send(send_msg)
-            await send_as_piechart(i, message.channel.id)
-            
-
-    #muss raus
-    await handle_admin_cmd(message)
-
-    for r in message.author.roles:
-        if r.id == 773996048094986241 or r.id == 773993684651212812:
-            await handle_admin_cmd(message)
+        else:
+            await message.channel.send("Vote command must have two parameters.")
 
 async def handle_admin_cmd(message):
     cmd: str = message.content.replace(INDIC, "")
@@ -72,6 +87,7 @@ async def handle_admin_cmd(message):
         await message.channel.send("Command to create new poll: \n '>new [Option 1, Option 2, usw.] \"Title\" \"Text describing the vote.\" x' where x is the length in hours the poll should run")
 
     elif cmd.startswith("new"):
+        # hier noch checken ob len richtig ist und sanitizen
         splitted = cmd.split("\"")
         title = splitted[1]
         text = splitted[3]
@@ -83,13 +99,44 @@ async def handle_admin_cmd(message):
         createPoll(text, title, "multi", list(map(lambda x: x.strip(), teilnehmer)), int(hours))
 
     elif cmd.startswith("delete"):
-        poll_id = cmd.split(" ")[1]
+        splitted = cmd.split(" ")
 
-        # delete call machen
+        if len(splitted) == 2:
+            try:
+                ret = deletePoll(splitted[1])
+
+                if ret == "Success":
+                    await message.channel.send("Success!")
+                else:
+                    await message.channel.send("Datenbank hat nicht geantwortet. Schreib mal Hanns Eisler, der fixt das.")
+
+
+            except errors.InvalidId:
+                await message.channel.send("Invalid poll id.")
+
+        else:
+            await message.channel.send("Delete command needs two parameters!")
+
+    # elif cmd.startswith("sos"):
+    #     msgs = await message.channel.history(limit=50).flatten()
+    #     for i in msgs:
+    #         await i.delete()
+    #     print("Finished")
+
+async def handle_server_msg(message):
+    cmd: str = message.content.replace(INDIC, "")
+
+    #muss raus
+    await handle_admin_cmd(message)
+
+    for r in message.author.roles:
+        if r.id == 773996048094986241 or r.id == 773993684651212812:
+            await handle_admin_cmd(message)
 
 @client.event
 async def on_message(message):
     author: Member = message.author
+    cmd: str = message.content.replace(INDIC, "")
 
     if author == client.user:
         return
@@ -97,12 +144,15 @@ async def on_message(message):
     if not message.content.startswith(INDIC):
         return
 
+    if cmd.startswith("running"):
+        for i in running():
+            await send_poll(i, message.channel)
+
     # private channel
     if str(message.channel.type) == "private":
         await handle_private_msg(message)
     # server
     else:
         await handle_server_msg(message)
-
 
 client.run(TOKEN)

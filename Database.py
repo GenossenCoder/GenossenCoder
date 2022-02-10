@@ -2,9 +2,10 @@ import certifi
 from pymongo import MongoClient
 from datetime import datetime, timedelta
 from bson.objectid import ObjectId
+from TOKEN import database_token
 
 def Connect():
-    connection_string = "mongodb+srv://adim:WknSllcgkPnBuuR1@cluster0.uw8iy.mongodb.net/Discord?retryWrites=true&w=majority"
+    connection_string = database_token
     client  = MongoClient(connection_string, tlsCAFile=certifi.where())
     db = client['Discord']
     Events = db.Event
@@ -24,11 +25,12 @@ def createPoll(text,title,pollType,competitors,deadline):
         for i in range(len(competitors)):
             Event_single[competitors[i]]=[]
     Events.insert_one(Event_single)
+    return "Success"
 
 def addVote(id,vote,name):
     Events=Connect();
     Events.update_one({"_id" :ObjectId(id)},{"$push":{vote:name}})
-    return("sucessfull")
+    return("Success")
 
 
 def getPoll(id):
@@ -51,6 +53,3 @@ def running():
         if i['deadline'] > datetime.utcnow():
             runningPolls.append(i['_id'])
     return runningPolls
-#running()
-#addVote("6204fa9bb6436cbdfc1c9e8d","Jasmin","du")
-#createPoll("text","title","multi",["Zombie", "Jasmin","Olaf","Clemens"],9)S
