@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 def Connect():
     connection_string = "mongodb+srv://adim:WknSllcgkPnBuuR1@cluster0.uw8iy.mongodb.net/Discord?retryWrites=true&w=majority"
     client  = MongoClient(connection_string, tlsCAFile=certifi.where())
-    db = client['Discord']#
+    db = client['Discord']
     Events = db.Event
     return Events
 
