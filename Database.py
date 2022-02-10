@@ -52,6 +52,6 @@ def running():
             runningPolls.append(i['_id'])
     return runningPolls
 #running()
-print(getPoll("6204fa9bb6436cbdfc1c9e8d"))
-#addVote("6204fa9bb6436cbdfc1c9e8d","Jasmin","du")
-#createPoll("text","title","multi",["Zombie", "Jasmin","Olaf","Clemens"],9)S
+#print(getPoll("620505c998eb032f233fba35"))
+#addVote("6205099dc5d0a40742ba070c","Clemens","Emma Watson")
+#createPoll("text","title","multi",["Zombie", "Jasmin","Olaf","Clemens"],9)
