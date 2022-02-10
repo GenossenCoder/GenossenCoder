@@ -32,14 +32,9 @@ def addVote(id,vote,name):
 
 
 def getPoll(id):
-    List=[]
     Events=Connect()
     Poll=Events.find_one({"_id" :ObjectId(id)})
-    List.append(Poll['competetors'])
-    List.append([])
-    for i in Poll['competetors']:
-        List[1].append(Poll[i])
-    return List
+    return Poll
 
 
 def deletePoll(id):
@@ -57,6 +52,6 @@ def running():
             runningPolls.append(i['_id'])
     return runningPolls
 #running()
-#print(getPoll("6204fa9bb6436cbdfc1c9e8d"))
+print(getPoll("6204fa9bb6436cbdfc1c9e8d"))
 #addVote("6204fa9bb6436cbdfc1c9e8d","Jasmin","du")
 #createPoll("text","title","multi",["Zombie", "Jasmin","Olaf","Clemens"],9)S
