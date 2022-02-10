@@ -35,7 +35,7 @@ async def handle_private_msg(message):
         for i in running():
             x += 1
             send_as_piechart(i)
-            await message.channel.send("Poll number: " + str(x))
+            await message.channel.send(getPoll(i))
 
             # hier nachricht vom user awaiten und dann add_vote aufrufen
 
