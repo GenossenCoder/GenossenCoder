@@ -35,14 +35,11 @@ async def send_poll(id, channel):
         await channel.send(send_msg)
         await send_as_piechart(id, channel.id)
 
-#vllt später
-# @tasks.loop(hours=12)
-# async def send_chart():
-#     if running() == None:
-#        return
-#     else:
-#         for i in running():
-#             send_as_piechart(i)
+@tasks.loop(hours=12)
+async def send_chart():
+    for i in running():
+        await send_poll(i, client.get_channel(940052984904155206))
+
         
 async def handle_private_msg(message):
     cmd: str = message.content.replace(INDIC, "")
@@ -92,6 +89,10 @@ async def handle_admin_cmd(message):
             Bsp: >new [Yes, No] "Whos Coaeyl" "Pls vote wery importand" 72
             `>delete (PollID)`
         """)
+
+    elif cmd.startswith("running"):
+        for i in running():
+            await send_poll(i, message.channel)
 
     elif cmd.startswith("new"):
         # hier noch checken ob len richtig ist und sanitizen
@@ -151,14 +152,13 @@ async def on_message(message):
     if not message.content.startswith(INDIC):
         return
 
-    if cmd.startswith("running"):
-        for i in running():
-            await send_poll(i, message.channel)
+    # if cmd.startswith("running"):
+    #     for i in running():
+    #         await send_poll(i, message.channel)
 
     elif cmd.startswith("help"):
         await message.channel.send("""
         Commands:
-            `>running` Shows all running polls
             `>vote (PollID) (Vote)` Vote for your candidate (!Must be in private channel!)
         """)
 
